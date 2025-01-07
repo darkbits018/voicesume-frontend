@@ -5,6 +5,7 @@ import { ExperienceLevelStage } from '../stages/ExperienceLevelStage';
 import { CareerObjectiveStage } from '../stages/CareerObjectiveStage';
 import { ChatAction } from '../types';
 import { ChatActions } from '../components/ChatActions';
+import { ChatInput } from './ChatInput';
 
 interface StageManagerProps {
   stage: WorkflowStage;
@@ -15,6 +16,20 @@ interface StageManagerProps {
 
 export const StageManager: React.FC<StageManagerProps> = ({ stage, onStageComplete, handleSendMessage, handleAISuggestion }) => {
   const [aiGeneratedProfile, setAiGeneratedProfile] = useState<string | null>(null);
+  const [isListening, setIsListening] = useState(false);
+  const voiceSupported = true; // Assuming voice support is available
+
+
+  const handleStartVoice = () => {
+    setIsListening(true);
+    console.log('Voice input started');
+  };
+
+  const handleStopVoice = () => {
+    setIsListening(false);
+    console.log('Voice input stopped');
+  };
+
 
   const handleUserInfoSubmit = (data: { name: string; phone: string; email: string }) => {
     const message = `Name: ${data.name}, Phone: ${data.phone}, Email: ${data.email}`;
@@ -54,10 +69,18 @@ export const StageManager: React.FC<StageManagerProps> = ({ stage, onStageComple
   };
 
   const handleEditProfile = () => {
-    setAiGeneratedProfile(null);
     handleSendMessage('Please edit your career profile in the chatbox below.', 'ai');
+    return (
+      <ChatInput
+        setInputValue={aiGeneratedProfile}
+        onSend={handleSendMessage}
+        onStartVoice={handleStartVoice}
+        onStopVoice={handleStopVoice}
+        isListening={isListening}
+        voiceSupported={voiceSupported}
+      />
+    );
   };
-
   const handleProceed = () => {
     setAiGeneratedProfile(null);
     const nextStage = getNextStage(stage);
