@@ -16,6 +16,11 @@ function App() {
   const [inputValue, setInputValue] = useState(''); // Define inputValue state
   const chatEndRef = useRef<HTMLDivElement>(null);
 
+  const handleProfileEdit = (profile: string) => {
+    setInputValue(profile);
+    setEditingProfile(true);
+  };
+
   const scrollToBottom = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -100,7 +105,7 @@ function App() {
       <header className="bg-white border-b p-4">
         <h1 className="text-xl font-semibold text-gray-800">Resume Builder</h1>
       </header>
-      
+
       <main className="flex-1 overflow-y-auto p-4">
         <div className="max-w-3xl mx-auto">
           {state.messages.map((message) => (
@@ -110,12 +115,12 @@ function App() {
               type={message.type}
             />
           ))}
-          <StageManager 
+          <StageManager
             stage={state.stage}
             onStageComplete={handleStageComplete}
             handleSendMessage={handleSendMessage}
             handleAISuggestion={handleAISuggestion}
-            handleEditProfile={handleEditProfile}
+            setInputValue={handleProfileEdit} 
           />
           <div ref={chatEndRef} />
         </div>
@@ -129,8 +134,8 @@ function App() {
             onStopVoice={stopListening}
             isListening={isListening}
             transcript={transcript}
-            inputValue={inputValue}
-            setInputValue={setInputValue}
+            inputValue={inputValue}       
+            setInputValue={setInputValue} 
           />
         </div>
       </footer>
