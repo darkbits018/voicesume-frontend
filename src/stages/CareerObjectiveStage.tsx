@@ -38,6 +38,7 @@ export const CareerObjectiveStage: React.FC<CareerObjectiveStageProps> = ({ onSu
     setUseAISuggestion(true);
     setShowDesiredRoleInput(true);
     handleSendMessage?.("I want AI to suggest a career objective", "user");
+    handleSendMessage?.("I can help you craft a professional career objective. Please enter your desired job role.", "ai");
   };
 
   const handleManualClick = () => {
@@ -87,3 +88,4 @@ export const CareerObjectiveStage: React.FC<CareerObjectiveStageProps> = ({ onSu
     </div>
   );
 };
+

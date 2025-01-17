@@ -71,18 +71,29 @@ function App() {
   const handleProfileUpdate = (updatedProfile: string) => {
     handleSendMessage(`Updated Career Profile: "${updatedProfile}"`, 'user');
     setEditingProfile(false);
-    handleProceed();
+    handleSendMessage("Moving to education details", 'ai');
+    moveToStage('education');
+    handleSendMessage(
+      "Let's define your educational qualifications. Please enter your qualification in this format:\n\n" +
+      "Degree, Specialization, College Name, Year of Completion, CGPA/Percentage\n\n" +
+      "Example: B.E, CSE from XYZ College, 2019, 8.5 CGPA",
+      'ai'
+    );
   };
 
   const handleSendMessageWrapper = (message: string) => {
     if (editingProfile) {
       handleProfileUpdate(message);
-    } else if (useAISuggestion) {
+    } else if (useAISuggestion && state.stage === 'careerObjective') {
+      handleSendMessage(message, 'user');
       handleAISuggestionSubmit(message);
+      setUseAISuggestion(false);
     } else {
       handleSendMessage(message);
     }
   };
+
+
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
@@ -114,15 +125,15 @@ function App() {
 
       <footer className="bg-white border-t">
         <div className="max-w-3xl mx-auto">
-            <ChatInput
-              onSend={handleSendMessageWrapper}
-              onStartVoice={startListening}
-              onStopVoice={stopListening}
-              isListening={isListening}
-              transcript={transcript}
-              inputValue={inputValue}
-              setInputValue={setInputValue}
-            />
+          <ChatInput
+            onSend={handleSendMessageWrapper}
+            onStartVoice={startListening}
+            onStopVoice={stopListening}
+            isListening={isListening}
+            transcript={transcript}
+            inputValue={inputValue}
+            setInputValue={setInputValue}
+          />
         </div>
       </footer>
     </div>
