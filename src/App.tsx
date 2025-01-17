@@ -14,6 +14,8 @@ function App() {
   const [useAISuggestion, setUseAISuggestion] = useState(false); // Define useAISuggestion state
   const [editingProfile, setEditingProfile] = useState(false); // Define editingProfile state
   const [inputValue, setInputValue] = useState(''); // Define inputValue state
+  const [showInput, setShowInput] = useState(true);
+
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const handleProfileEdit = (profile: string) => {
@@ -50,24 +52,6 @@ function App() {
     addMessage('Please enter your desired job role.', 'ai');
   };
 
-  const handleAISuggestionSubmit = (desiredJobRole: string) => {
-    const message = `Desired Job Role: ${desiredJobRole}`;
-    handleStageComplete({ desiredJobRole }, message);
-
-    // Simulate AI-generated career profile
-    const dummyProfile = `Based on your desired job role as a ${desiredJobRole}, here is a suggested career profile: "To secure a position as a ${desiredJobRole}, leveraging my skills and knowledge to contribute to organizational success."`;
-    handleSendMessage(dummyProfile, 'ai');
-
-    // Provide chat action buttons
-    const action: ChatAction = {
-      type: 'button',
-      options: [
-        { label: 'Edit', value: 'edit', action: () => handleEditProfile(dummyProfile) },
-        { label: 'Proceed', value: 'proceed', action: () => handleProceed() },
-      ],
-    };
-    handleSendMessage('What would you like to do next?', 'ai', action);
-  };
 
   const handleEditProfile = (profile: string) => {
     setEditingProfile(true);
@@ -120,7 +104,9 @@ function App() {
             onStageComplete={handleStageComplete}
             handleSendMessage={handleSendMessage}
             handleAISuggestion={handleAISuggestion}
-            setInputValue={handleProfileEdit} 
+            setInputValue={handleProfileEdit}
+            setShowInput={setShowInput}  // Add this prop
+
           />
           <div ref={chatEndRef} />
         </div>
@@ -128,15 +114,15 @@ function App() {
 
       <footer className="bg-white border-t">
         <div className="max-w-3xl mx-auto">
-          <ChatInput
-            onSend={handleSendMessageWrapper}
-            onStartVoice={startListening}
-            onStopVoice={stopListening}
-            isListening={isListening}
-            transcript={transcript}
-            inputValue={inputValue}       
-            setInputValue={setInputValue} 
-          />
+            <ChatInput
+              onSend={handleSendMessageWrapper}
+              onStartVoice={startListening}
+              onStopVoice={stopListening}
+              isListening={isListening}
+              transcript={transcript}
+              inputValue={inputValue}
+              setInputValue={setInputValue}
+            />
         </div>
       </footer>
     </div>

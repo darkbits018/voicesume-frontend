@@ -10,6 +10,8 @@ export const getNextStage = (currentStage: WorkflowStage): WorkflowStage | null 
       return 'careerObjective';
     case 'careerObjective':
       return null; // No next stage, end of workflow
+    case 'education':
+      return 'skills';
     default:
       return null;
   }

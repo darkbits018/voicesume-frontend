@@ -109,16 +109,19 @@ import { CareerObjectiveStage } from '../stages/CareerObjectiveStage';
 import { ChatAction } from '../types';
 import { ChatActions } from '../components/ChatActions';
 import { ChatInput } from './ChatInput';
+import { EducationalQualificationsStage } from '../stages/EducationalQualificationsStage';
+
 
 interface StageManagerProps {
   stage: WorkflowStage;
   onStageComplete: (data: any, message: string) => void;
   handleSendMessage: (message: string, type?: 'user' | 'ai', action?: ChatAction) => void;
   handleAISuggestion: () => void;
-  setInputValue: (value: string) => void; 
+  setInputValue: (value: string) => void;
+  setShowInput: (show: boolean) => void;
 }
 
-export const StageManager: React.FC<StageManagerProps> = ({ stage, onStageComplete, handleSendMessage, handleAISuggestion, setInputValue }) => {
+export const StageManager: React.FC<StageManagerProps> = ({ stage, setShowInput, onStageComplete, handleSendMessage, handleAISuggestion, setInputValue }) => {
   const [aiGeneratedProfile, setAiGeneratedProfile] = useState<string | null>(null);
   const [isListening, setIsListening] = useState(false);
   const voiceSupported = true; // Assuming voice support is available
@@ -155,24 +158,29 @@ export const StageManager: React.FC<StageManagerProps> = ({ stage, onStageComple
     onStageComplete({ desiredJobRole: desiredJobRole }, message);
 
     // Simulate AI-generated career profile
-    const dummyProfile = `Based on your desired job role as a ${desiredJobRole}, here is a suggested career profile: "To secure a position as a ${desiredJobRole}, leveraging my skills and knowledge to contribute to organizational success."`;
-    setAiGeneratedProfile(dummyProfile);
+    const dummyProfile = `"To secure a position as a ${desiredJobRole}, leveraging my skills and knowledge to contribute to organizational success."`;
+    const airespo = `Based on your desired job role as a ${desiredJobRole}, here is a suggested career profile:`
+    const carprof = dummyProfile + airespo;
+    setAiGeneratedProfile(airespo);
 
     // Add AI-generated career profile message
-    handleSendMessage(dummyProfile, 'ai');
+    handleSendMessage(carprof, 'ai');
 
     // Provide chat action buttons
     const action: ChatAction = {
       type: 'button',
       options: [
-        { label: 'Edit', value: 'edit', action: () => {
-          handleSendMessage('Please edit your career profile in the chatbox below.', 'ai');
-          setInputValue(dummyProfile);  // This will update the input in App.tsx
-        } },
+        {
+          label: 'Edit', value: 'edit', action: () => {
+            handleSendMessage('Please edit your career profile in the chatbox below.', 'ai');
+            setInputValue(dummyProfile);  // This will update the input in App.tsx
+          }
+        },
         { label: 'Proceed', value: 'proceed', action: () => handleProceed() },
       ],
     };
     handleSendMessage('What would you like to do next?', 'ai', action);
+    setShowInput(false);  // Hide input after job role is submitted
   };
 
   // const handleEditProfile = (desiredJobRole: string) => {
@@ -183,10 +191,23 @@ export const StageManager: React.FC<StageManagerProps> = ({ stage, onStageComple
   // };
   const handleProceed = () => {
     setAiGeneratedProfile(null);
-    const nextStage = getNextStage(stage);
-    if (nextStage) {
-      moveToStage(nextStage);
-    }
+
+    // First, send the final career profile message
+    handleSendMessage("Your Career Profile:", 'ai');
+    handleSendMessage(aiGeneratedProfile || '', 'user');
+
+    // Then, move to education stage with instructions
+    handleSendMessage(
+      "Let's define your educational qualifications. Please enter your qualification in this format:\n\n" +
+      "Degree, Specialization, College Name, Year of Completion, CGPA/Percentage\n\n" +
+      "Example: B.E, CSE from XYZ College, 2019, 8.5 CGPA",
+      'ai'
+    );
+    onStageComplete({ stage: 'education' }, "Moving to education details");
+  };
+  const handleEducationSubmit = (educations: any[]) => {
+    const message = `Education added: ${educations.length} qualification(s)`;
+    onStageComplete({ education: educations }, message);
   };
 
   switch (stage) {
@@ -195,10 +216,16 @@ export const StageManager: React.FC<StageManagerProps> = ({ stage, onStageComple
     case 'experienceLevel':
       return <ExperienceLevelStage onSelect={handleExperienceLevelSelect} />;
     case 'careerObjective':
-      return (<>
-        <CareerObjectiveStage onSubmit={handleCareerObjectiveSubmit} onAISuggestion={handleAISuggestion} onAISuggestionSubmit={handleAISuggestionSubmit} />;
-      </>
-      )
+      return (
+        <CareerObjectiveStage
+          onSubmit={handleCareerObjectiveSubmit}
+          onAISuggestion={handleAISuggestion}
+          onAISuggestionSubmit={handleAISuggestionSubmit}
+          handleSendMessage={handleSendMessage}  // Add this prop
+        />
+      );
+    case 'education':
+      return <EducationalQualificationsStage onSubmit={handleEducationSubmit} />;
     default:
       return null;
   }

@@ -1,20 +1,27 @@
 import React, { useState } from 'react';
+import { ChatActions } from '../components/ChatActions';
+import { ChatAction } from '../types';
+
 
 interface CareerObjectiveStageProps {
   onSubmit: (data: { careerObjective: string }) => void;
   onAISuggestion: () => void;
   onAISuggestionSubmit: (desiredJobRole: string) => void;
+  handleSendMessage?: (message: string, type?: 'user' | 'ai') => void;
 }
 
-export const CareerObjectiveStage: React.FC<CareerObjectiveStageProps> = ({ onSubmit, onAISuggestion, onAISuggestionSubmit }) => {
+export const CareerObjectiveStage: React.FC<CareerObjectiveStageProps> = ({ onSubmit, onAISuggestion, onAISuggestionSubmit, handleSendMessage }) => {
   const [careerObjective, setCareerObjective] = useState('');
   const [useAISuggestion, setUseAISuggestion] = useState(false);
   const [desiredJobRole, setDesiredJobRole] = useState('');
+  const [showActions, setShowActions] = useState(true);
+  const [showDesiredRoleInput, setShowDesiredRoleInput] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (useAISuggestion) {
       onAISuggestionSubmit(desiredJobRole);
+      setShowDesiredRoleInput(false);
     } else {
       onSubmit({ careerObjective });
     }
@@ -25,19 +32,42 @@ export const CareerObjectiveStage: React.FC<CareerObjectiveStageProps> = ({ onSu
     onAISuggestion();
   };
 
+  const handleAIClick = () => {
+    setShowActions(false);
+    handleAISuggestion();
+    setUseAISuggestion(true);
+    setShowDesiredRoleInput(true);
+    handleSendMessage?.("I want AI to suggest a career objective", "user");
+  };
+
+  const handleManualClick = () => {
+    setShowActions(false);
+    setUseAISuggestion(false);
+    handleSendMessage?.("I want to write my own career objective", "user");
+  };
+
   return (
     <div className="space-y-4 mt-4">
-      {!useAISuggestion ? (
-        <>
-          <p className="text-gray-700">Let's define your career objective.</p>
-          <button type="button" onClick={handleAISuggestion} className="w-full p-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
-            AI Suggestion
-          </button>
-          <button type="button" onClick={() => setUseAISuggestion(false)} className="w-full p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-            Create from Scratch
-          </button>
-        </>
-      ) : (
+      {showActions && (
+        <ChatActions
+          action={{
+            type: "button",
+            options: [
+              {
+                label: "AI Suggestion",
+                value: "ai",
+                action: handleAIClick
+              },
+              {
+                label: "Create from Scratch",
+                value: "manual",
+                action: handleManualClick
+              }
+            ]
+          }}
+        />
+      )}
+      {showDesiredRoleInput && (
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <input
