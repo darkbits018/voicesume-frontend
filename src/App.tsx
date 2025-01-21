@@ -9,7 +9,7 @@ import { getNextStage } from './utils/workflowUtils';
 import { ChatAction } from './types';
 
 function App() {
-  const { state, moveToStage, addMessage, updateData } = useWorkflow();
+  const { state, moveToStage, addMessage, updateData, onStageComplete } = useWorkflow();
   const { isListening, transcript, startListening, stopListening } = useVoiceInput();
   const [useAISuggestion, setUseAISuggestion] = useState(false); // Define useAISuggestion state
   const [editingProfile, setEditingProfile] = useState(false); // Define editingProfile state

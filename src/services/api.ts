@@ -1,11 +1,11 @@
 import { ResumeData, WorkflowStage } from '../types/workflow';
 
-const API_BASE_URL = '/api';
+const API_BASE_URL = 'http://127.0.0.1:5000/api';
 
 export const sendResponse = async (stage: WorkflowStage, data: Partial<ResumeData>) => {
     const endpoints: Record<WorkflowStage, string> = {
         welcome: '/welcome',
-        userInfo: '/user-info',
+        userInfo: '/basic_details',
         experienceLevel: '/experience-level',
         careerObjective: '/career-objective',
         education: '/education',

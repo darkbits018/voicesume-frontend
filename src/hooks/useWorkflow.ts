@@ -48,10 +48,16 @@ export function useWorkflow() {
     }));
   }, []);
 
+  const onStageComplete = useCallback((data: Partial<ResumeData>, message: string) => {
+    updateData(data);
+    addMessage(message, 'user');
+  }, [updateData, addMessage]);
+
   return {
     state,
     moveToStage,
     addMessage,
     updateData,
+    onStageComplete,
   };
 }

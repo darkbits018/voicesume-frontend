@@ -7,6 +7,7 @@ import { ChatAction } from '../types';
 import { ChatActions } from '../components/ChatActions';
 import { ChatInput } from './ChatInput';
 import { EducationalQualificationsStage } from '../stages/EducationalQualificationsStage';
+import SkillStage from '../stages/SkillStage';
 
 
 interface StageManagerProps {
@@ -86,9 +87,12 @@ export const StageManager: React.FC<StageManagerProps> = ({ stage, setShowInput,
       'ai'
     );
   };
-  const handleEducationSubmit = (educations: any[]) => {
-    const message = `Education added: ${educations.length} qualification(s)`;
-    onStageComplete({ education: educations }, message);
+
+  const handleEducationSubmit = (data: { education: string }) => {
+    handleSendMessage(data.education, 'user');
+    onStageComplete({ education: data.education }, `Education added: ${data.education}`);
+    moveToStage('skills');
+    handleSendMessage("Great! Now, let's add your skills. Please list your technical and soft skills.", 'ai');
   };
 
   switch (stage) {
@@ -135,6 +139,8 @@ export const StageManager: React.FC<StageManagerProps> = ({ stage, setShowInput,
       );
     case 'education':
       return <EducationalQualificationsStage onSubmit={handleEducationSubmit} />;
+    case 'skills':
+      return <SkillStage onStageComplete={onStageComplete} />;
     default:
       return null;
   }
