@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState } from 'react';
 import { WorkflowStage } from '../types/workflow';
 import { UserInfoStage } from '../stages/UserInfoStage';
@@ -7,7 +8,9 @@ import { ChatAction } from '../types';
 import { ChatActions } from '../components/ChatActions';
 import { ChatInput } from './ChatInput';
 import { EducationalQualificationsStage } from '../stages/EducationalQualificationsStage';
-import SkillStage from '../stages/SkillStage';
+import SkillStage from '../stages/SkillStage'; // Use default import
+import { getNextStage } from '../utils/workflowUtils'; // Import the function
+import { WorkflowState } from '../types/workflow';
 
 
 interface StageManagerProps {
@@ -17,9 +20,11 @@ interface StageManagerProps {
   handleAISuggestion: () => void;
   setInputValue: (value: string) => void;
   setShowInput: (show: boolean) => void;
+  moveToStage: (stage: WorkflowStage) => void; // Add this prop
+  state: WorkflowState; // Add this prop
 }
 
-export const StageManager: React.FC<StageManagerProps> = ({ stage, setShowInput, onStageComplete, handleSendMessage, handleAISuggestion, setInputValue }) => {
+export const StageManager: React.FC<StageManagerProps> = ({ stage, setShowInput, onStageComplete, handleSendMessage, handleAISuggestion, setInputValue, moveToStage, state, }) => {
   const [aiGeneratedProfile, setAiGeneratedProfile] = useState<string | null>(null);
   const [isListening, setIsListening] = useState(false);
   const [showEditProceedButtons, setShowEditProceedButtons] = useState(false);
@@ -91,8 +96,10 @@ export const StageManager: React.FC<StageManagerProps> = ({ stage, setShowInput,
   const handleEducationSubmit = (data: { education: string }) => {
     handleSendMessage(data.education, 'user');
     onStageComplete({ education: data.education }, `Education added: ${data.education}`);
-    moveToStage('skills');
-    handleSendMessage("Great! Now, let's add your skills. Please list your technical and soft skills.", 'ai');
+    const nextStage = getNextStage(state.stage); 
+    if (nextStage) {
+      moveToStage(nextStage); // Move to the next stage
+    }
   };
 
   switch (stage) {
@@ -138,9 +145,29 @@ export const StageManager: React.FC<StageManagerProps> = ({ stage, setShowInput,
         </>
       );
     case 'education':
-      return <EducationalQualificationsStage onSubmit={handleEducationSubmit} />;
+      return (
+        <EducationalQualificationsStage
+          onSubmit={(data) => {
+            handleEducationSubmit(data);
+          }}
+        />
+      );
     case 'skills':
-      return <SkillStage onStageComplete={onStageComplete} />;
+      return (
+        <SkillStage
+          onStageComplete={(data) => {
+            onStageComplete(data, "Skills added successfully.");
+          }}
+        />
+      );
+    // case 'projects':
+    //   return <ProjectsStage onStageComplete={onStageComplete} />;
+    // case 'internships':
+    //   return <InternshipsStage onStageComplete={onStageComplete} />;
+    // case 'certifications':
+    //   return <CertificationsStage onStageComplete={onStageComplete} />;
+    // case 'summary':
+    //   return <SummaryStage data={state.data} />;
     default:
       return null;
   }

@@ -117,6 +117,8 @@ function App() {
             handleAISuggestion={handleAISuggestion}
             setInputValue={handleProfileEdit}
             setShowInput={setShowInput}  // Add this prop
+            moveToStage={moveToStage} // Pass this prop
+            state={state} 
 
           />
           <div ref={chatEndRef} />

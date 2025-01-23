@@ -76,12 +76,12 @@ interface ChatInputProps {
   onStopVoice: () => void;
   isListening: boolean;
   transcript: string;
-  inputValue: string;
+  inputValue: string; // Ensure this prop is defined
   setInputValue: (value: string) => void;
 }
 
 export const ChatInput: React.FC<ChatInputProps> = ({ onSend, onStartVoice, onStopVoice, isListening, transcript, inputValue, setInputValue }) => {
-  const [input, setInput] = useState(inputValue);
+  const [input, setInput] = useState(inputValue || ''); // Initialize with inputValue or empty string
 
   useEffect(() => {
     setInput(inputValue);
@@ -95,13 +95,12 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSend, onStartVoice, onSt
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (input.trim()) {
+    if (input.trim()) { // Ensure input is defined
       onSend(input);
       setInput('');
       setInputValue('');
     }
   };
-
   return (
     <form onSubmit={handleSubmit} className="flex items-center gap-2 p-4 border-t bg-white">
       <button

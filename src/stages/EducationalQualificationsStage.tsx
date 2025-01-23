@@ -9,13 +9,15 @@ export const EducationalQualificationsStage: React.FC<EducationalQualificationsS
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ education });
+    if (education.trim()) { // Ensure education is not empty
+      onSubmit({ education });
+    }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <h2 className="text-xl font-semibold">Educational Qualification</h2>
-      
+
       <div>
         <input
           type="text"
