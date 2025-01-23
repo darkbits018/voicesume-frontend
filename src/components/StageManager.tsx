@@ -29,6 +29,7 @@ export const StageManager: React.FC<StageManagerProps> = ({ stage, setShowInput,
   const [isListening, setIsListening] = useState(false);
   const [showEditProceedButtons, setShowEditProceedButtons] = useState(false);
   const voiceSupported = true; // Assuming voice support is available
+  const [airesponse, setAIResponse] = useState<string | null>(null);
 
 
   const handleStartVoice = () => {
@@ -57,23 +58,69 @@ export const StageManager: React.FC<StageManagerProps> = ({ stage, setShowInput,
     onStageComplete({ careerObjective: data.careerObjective }, message);
   };
 
-  const handleAISuggestionSubmit = (message: string) => {
+  // const handleAISuggestionSubmit = (message: string) => {
+  //   // Treat the message as the desired job role
+  //   const desiredJobRole = message;
+  //   onStageComplete({ desiredJobRole: desiredJobRole }, `Desired Job Role: ${desiredJobRole}`);
+
+  //   // Simulate AI-generated career profile
+  //   const dummyProfile = `To secure a position as a ${desiredJobRole}, leveraging my skills and knowledge to contribute to organizational success.`;
+  //   const airespo = `Based on your desired job role as a "${desiredJobRole}", here is a suggested career profile:`;
+  //   const carprof = airespo + dummyProfile;
+  //   setAiGeneratedProfile(dummyProfile);
+
+  //   // Add AI-generated career profile message
+  //   handleSendMessage(carprof, 'ai');
+
+  //   // Show the buttons after sending the message
+  //   setShowEditProceedButtons(true);
+  // };
+
+  const handleAISuggestionSubmit = async (message: string) => {
     // Treat the message as the desired job role
     const desiredJobRole = message;
-    onStageComplete({ desiredJobRole: desiredJobRole }, `Desired Job Role: ${desiredJobRole}`);
 
-    // Simulate AI-generated career profile
-    const dummyProfile = `To secure a position as a ${desiredJobRole}, leveraging my skills and knowledge to contribute to organizational success.`;
-    const airespo = `Based on your desired job role as a "${desiredJobRole}", here is a suggested career profile:`;
-    const carprof = airespo + dummyProfile;
-    setAiGeneratedProfile(dummyProfile);
+    try {
+      // Send the job role to the backend API
+      const response = await fetch('http://127.0.0.1:5000/generate-career-profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ job_role: desiredJobRole }),
+      });
 
-    // Add AI-generated career profile message
-    handleSendMessage(carprof, 'ai');
+      if (!response.ok) {
+        throw new Error(`API error: ${response.statusText}`);
+      }
 
-    // Show the buttons after sending the message
-    setShowEditProceedButtons(true);
+      // Parse the response
+      const data = await response.json();
+      const airesponse = data.response
+      // Update the state with the AI-generated response
+      setAIResponse(airesponse);
+
+      // Update the stage data with the desired job role
+      onStageComplete({ desiredJobRole: desiredJobRole }, `Desired Job Role: ${desiredJobRole}`);
+
+      // Display the AI-generated career profile in the chat
+      handleSendMessage(airesponse, 'ai');
+
+      // Show the "Edit" and "Proceed" buttons
+      setShowEditProceedButtons(true);
+
+
+    } catch (error) {
+      console.error('Error generating career profile:', error);
+
+      // Fallback message if the API call fails
+      handleSendMessage('Failed to generate a career profile. Please try again.', 'ai');
+    }
   };
+
+
+
+
 
   const handleProceed = () => {
     setAiGeneratedProfile(null);
@@ -96,7 +143,7 @@ export const StageManager: React.FC<StageManagerProps> = ({ stage, setShowInput,
   const handleEducationSubmit = (data: { education: string }) => {
     handleSendMessage(data.education, 'user');
     onStageComplete({ education: data.education }, `Education added: ${data.education}`);
-    const nextStage = getNextStage(state.stage); 
+    const nextStage = getNextStage(state.stage);
     if (nextStage) {
       moveToStage(nextStage); // Move to the next stage
     }
@@ -126,7 +173,7 @@ export const StageManager: React.FC<StageManagerProps> = ({ stage, setShowInput,
                     value: "edit",
                     action: () => {
                       handleSendMessage('Please edit your career profile in the chatbox below.', 'ai');
-                      setInputValue(aiGeneratedProfile || '');
+                      setInputValue(airesponse || '');
                       setShowEditProceedButtons(false);
                     }
                   },

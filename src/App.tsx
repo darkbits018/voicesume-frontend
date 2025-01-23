@@ -68,17 +68,52 @@ function App() {
     }
   };
 
-  const handleProfileUpdate = (updatedProfile: string) => {
-    handleSendMessage(`Updated Career Profile: "${updatedProfile}"`, 'user');
-    setEditingProfile(false);
-    handleSendMessage("Moving to education details", 'ai');
-    moveToStage('education');
-    handleSendMessage(
-      "Let's define your educational qualifications. Please enter your qualification in this format:\n\n" +
-      "Degree, Specialization, College Name, Year of Completion, CGPA/Percentage\n\n" +
-      "Example: B.E, CSE from XYZ College, 2019, 8.5 CGPA",
-      'ai'
-    );
+  // const handleProfileUpdate = (updatedProfile: string) => {
+  //   handleSendMessage(`Updated Career Profile: "${updatedProfile}"`, 'user');
+  //   setEditingProfile(false);
+  //   handleSendMessage("Moving to education details", 'ai');
+  //   moveToStage('education');
+  //   handleSendMessage(
+  //     "Let's define your educational qualifications. Please enter your qualification in this format:\n\n" +
+  //     "Degree, Specialization, College Name, Year of Completion, CGPA/Percentage\n\n" +
+  //     "Example: B.E, CSE from XYZ College, 2019, 8.5 CGPA",
+  //     'ai'
+  //   );
+  // };
+
+  const handleProfileUpdate = async (updatedProfile: string) => {
+    try {
+      // Send the updated profile to the Flask backend
+      const response = await fetch('http://127.0.0.1:5000/update-career-profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ updated_profile: updatedProfile }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update career profile.');
+      }
+
+      const data = await response.json();
+      console.log(data.message); // Log success message
+
+      // Update the UI
+      handleSendMessage(`Updated Career Profile: "${updatedProfile}"`, 'user');
+      setEditingProfile(false);
+      handleSendMessage("Moving to education details", 'ai');
+      moveToStage('education');
+      handleSendMessage(
+        "Let's define your educational qualifications. Please enter your qualification in this format:\n\n" +
+        "Degree, Specialization, College Name, Year of Completion, CGPA/Percentage\n\n" +
+        "Example: B.E, CSE from XYZ College, 2019, 8.5 CGPA",
+        'ai'
+      );
+    } catch (error) {
+      console.error('Error updating career profile:', error);
+      handleSendMessage('Failed to update career profile. Please try again.', 'ai');
+    }
   };
 
   const handleSendMessageWrapper = (message: string) => {
@@ -118,7 +153,7 @@ function App() {
             setInputValue={handleProfileEdit}
             setShowInput={setShowInput}  // Add this prop
             moveToStage={moveToStage} // Pass this prop
-            state={state} 
+            state={state}
 
           />
           <div ref={chatEndRef} />

@@ -1,22 +1,22 @@
 import { ResumeData, WorkflowStage } from '../types/workflow';
 
-const API_BASE_URL = 'http://127.0.0.1:5000/api';
+const API_BASE_URL = 'http://127.0.0.1:5000'; // Update with your backend URL
 
 export const sendResponse = async (stage: WorkflowStage, data: Partial<ResumeData>) => {
     const endpoints: Record<WorkflowStage, string> = {
-        welcome: '/welcome',
-        userInfo: '/basic_details',
-        experienceLevel: '/experience-level',
-        careerObjective: '/career-objective',
-        education: '/education',
-        skills: '/skills',
-        projects: '/projects',
-        internships: '/internships',
-        certifications: '/certifications',
-        achievements: '/achievements',
-        hobbies: '/hobbies',
-        summary: '/summary',
-        template: '/template'
+        welcome: '/start-resume',
+        userInfo: '/start-resume',
+        experienceLevel: '/set-experience-level',
+        careerObjective: '/generate-career-profile',
+        education: '/add-education',
+        skills: '/segregate-skills',
+        projects: '/add-projects',
+        internships: '/add-internships',
+        certifications: '/add-certifications',
+        achievements: '/add-achievements',
+        hobbies: '/add-hobbies',
+        summary: '/get-resume',
+        template: '/generate-template',
     };
 
     try {
