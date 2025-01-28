@@ -1,16 +1,34 @@
 import React, { useState } from 'react';
 import { ChatActions } from '../components/ChatActions';
-import { ChatAction } from '../types';
-
+import { ChatInput } from '../components/ChatInput';
 
 interface CareerObjectiveStageProps {
   onSubmit: (data: { careerObjective: string }) => void;
   onAISuggestion: () => void;
   onAISuggestionSubmit: (desiredJobRole: string) => void;
   handleSendMessage?: (message: string, type?: 'user' | 'ai') => void;
+  handleSendMessageWrapper: (input: string) => void;
+  startListening: () => void;
+  stopListening: () => void;
+  isListening: boolean;
+  transcript: string;
+  inputValue: string;
+  setInputValue: (value: string) => void;
 }
 
-export const CareerObjectiveStage: React.FC<CareerObjectiveStageProps> = ({ onSubmit, onAISuggestion, onAISuggestionSubmit, handleSendMessage }) => {
+export const CareerObjectiveStage: React.FC<CareerObjectiveStageProps> = ({
+  onSubmit,
+  onAISuggestion,
+  onAISuggestionSubmit,
+  handleSendMessage,
+  handleSendMessageWrapper,
+  startListening,
+  stopListening,
+  isListening,
+  transcript,
+  inputValue,
+  setInputValue,
+}) => {
   const [careerObjective, setCareerObjective] = useState('');
   const [useAISuggestion, setUseAISuggestion] = useState(false);
   const [desiredJobRole, setDesiredJobRole] = useState('');
@@ -46,10 +64,15 @@ export const CareerObjectiveStage: React.FC<CareerObjectiveStageProps> = ({ onSu
     setUseAISuggestion(false);
     handleSendMessage?.("I want to write my own career objective", "user");
   };
+  const handleSend = (input: string) => {
+    handleSendMessageWrapper(input);
+    setShowDesiredRoleInput(false);
+  };
+
 
   return (
     <div className="space-y-4 mt-4">
-      {showActions && (
+      {!showDesiredRoleInput && (
         <ChatActions
           action={{
             type: "button",
@@ -62,30 +85,26 @@ export const CareerObjectiveStage: React.FC<CareerObjectiveStageProps> = ({ onSu
               {
                 label: "Create from Scratch",
                 value: "manual",
-                action: handleManualClick
+                action: () => console.log('Create from Scratch clicked')
               }
             ]
           }}
         />
       )}
       {showDesiredRoleInput && (
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <input
-              type="text"
-              placeholder="Desired Job Role"
-              value={desiredJobRole}
-              onChange={(e) => setDesiredJobRole(e.target.value)}
-              className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-          <button type="submit" className="w-full p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-            Submit
-          </button>
-        </form>
+        <ChatInput
+          onSend={handleSendMessageWrapper}
+          onStartVoice={startListening}
+          onStopVoice={stopListening}
+          isListening={isListening}
+          transcript={transcript}
+          inputValue={inputValue}
+          setInputValue={setInputValue}
+        />
       )}
     </div>
   );
 };
+
+export default CareerObjectiveStage;
 

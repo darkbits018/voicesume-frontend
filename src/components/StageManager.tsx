@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { WorkflowStage } from '../types/workflow';
 import { UserInfoStage } from '../stages/UserInfoStage';
 import { ExperienceLevelStage } from '../stages/ExperienceLevelStage';
-import { CareerObjectiveStage } from '../stages/CareerObjectiveStage';
+import  CareerObjectiveStage  from '../stages/CareerObjectiveStage';
 import { ChatAction } from '../types';
 import { ChatActions } from '../components/ChatActions';
 import { ChatInput } from './ChatInput';
@@ -206,6 +206,7 @@ export const StageManager: React.FC<StageManagerProps> = ({ stage, setShowInput,
             onAISuggestion={handleAISuggestion}
             onAISuggestionSubmit={handleAISuggestionSubmit}
             handleSendMessage={handleSendMessage}
+            
           />
           {showEditProceedButtons && (
             <ChatActions
