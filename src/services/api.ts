@@ -9,7 +9,7 @@ export const sendResponse = async (stage: WorkflowStage, data: Partial<ResumeDat
         experienceLevel: '/set-experience-level',
         careerObjective: '/generate-career-profile',
         education: '/add-education',
-        skills: '/segregate-skills',
+        skills: '/add-skills',
         projects: '/add-projects',
         internships: '/add-internships',
         certifications: '/add-certifications',

@@ -43,14 +43,58 @@ export const StageManager: React.FC<StageManagerProps> = ({ stage, setShowInput,
   };
 
 
-  const handleUserInfoSubmit = (data: { name: string; phone: string; email: string }) => {
-    const message = `Name: ${data.name}, Phone: ${data.phone}, Email: ${data.email}`;
-    onStageComplete({ personalInfo: data }, message);
+  const handleUserInfoSubmit = async (data: { name: string; phone: string; email: string }) => {
+    try {
+      // Send the user info to the Flask backend
+      const response = await fetch('http://127.0.0.1:5000/start-resume', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save user information.');
+      }
+
+      const result = await response.json();
+      console.log(result.message); // Log success message
+
+      // Update the UI
+      const message = `Name: ${data.name}, Phone: ${data.phone}, Email: ${data.email}`;
+      onStageComplete({ personalInfo: data }, message);
+    } catch (error) {
+      console.error('Error saving user information:', error);
+      handleSendMessage('Failed to save user information. Please try again.', 'ai');
+    }
   };
 
-  const handleExperienceLevelSelect = (level: 'fresher' | 'experienced') => {
-    const message = `Experience Level: ${level}`;
-    onStageComplete({ experienceLevel: level }, message);
+  const handleExperienceLevelSelect = async (level: 'fresher' | 'experienced') => {
+    try {
+      // Send the experience level to the Flask backend
+      const response = await fetch('http://127.0.0.1:5000/set-experience-level', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ experience_level: level }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to set experience level.');
+      }
+
+      const data = await response.json();
+      console.log(data.message); // Log success message
+
+      // Update the UI
+      const message = `Experience Level: ${level}`;
+      onStageComplete({ experienceLevel: level }, message);
+    } catch (error) {
+      console.error('Error setting experience level:', error);
+      handleSendMessage('Failed to set experience level. Please try again.', 'ai');
+    }
   };
 
   const handleCareerObjectiveSubmit = (data: { careerObjective: string }) => {
@@ -205,6 +249,7 @@ export const StageManager: React.FC<StageManagerProps> = ({ stage, setShowInput,
           onStageComplete={(data) => {
             onStageComplete(data, "Skills added successfully.");
           }}
+          jobRole={state.data.careerObjective?.desiredJobRole || ''} // Pass job role from career profile
         />
       );
     // case 'projects':

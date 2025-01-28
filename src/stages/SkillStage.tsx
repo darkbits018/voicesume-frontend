@@ -1,44 +1,24 @@
-import React, { useState } from 'react';
-import { ChatInput } from '../components/ChatInput';
-import { sendResponse } from '../services/api';
+import React from 'react';
 
 interface SkillStageProps {
     onStageComplete: (data: { primarySkill: string; secondarySkill: string; additionalSkills: string }) => void;
+    jobRole: string;
+    userInput: string;
+    skills: { primary: string; secondary: string; additional: string } | null;
+    loading: boolean;
+    error: string | null;
+    handleUserInputSubmit: (input: string) => void;
 }
 
-export const SkillStage: React.FC<SkillStageProps> = ({ onStageComplete }) => {
-    const [userInput, setUserInput] = useState('');
-    const [desiredJobRole, setDesiredJobRole] = useState('');
-    const [skills, setSkills] = useState<{ primary: string; secondary: string; additional: string } | null>(null);
-    const [step, setStep] = useState<'input' | 'jobRole' | 'result'>('input');
-
-    const handleUserInputSubmit = async (input: string) => {
-        if (step === 'input') {
-            setUserInput(input);
-            setStep('jobRole');
-        } else if (step === 'jobRole') {
-            setDesiredJobRole(input);
-
-            // Send data to backend for processing
-            try {
-                const response = await sendResponse('skills', {
-                    userInput: userInput,
-                    desiredJobRole: input,
-                });
-
-                // Set skills returned by the backend
-                setSkills({
-                    primary: response.primarySkill,
-                    secondary: response.secondarySkill,
-                    additional: response.additionalSkills,
-                });
-                setStep('result');
-            } catch (error) {
-                console.error('Error fetching skills:', error);
-            }
-        }
-    };
-
+const SkillStage: React.FC<SkillStageProps> = ({
+    onStageComplete,
+    jobRole,
+    userInput,
+    skills,
+    loading,
+    error,
+    handleUserInputSubmit,
+}) => {
     const handleConfirmSkills = () => {
         if (skills) {
             onStageComplete({
@@ -51,19 +31,17 @@ export const SkillStage: React.FC<SkillStageProps> = ({ onStageComplete }) => {
 
     return (
         <div className="space-y-4">
-            {step === 'input' && (
+            {/* Step 1: Describe your skills */}
+            {!skills && (
                 <div>
                     <p className="text-lg font-semibold">Describe what you can do:</p>
-                    <ChatInput onSend={handleUserInputSubmit} placeholder="e.g., I can build web applications using React and Node.js" />
+                    {loading && <p className="text-gray-600">Loading skill suggestions...</p>}
+                    {error && <p className="text-red-600">{error}</p>}
                 </div>
             )}
-            {step === 'jobRole' && (
-                <div>
-                    <p className="text-lg font-semibold">What is your desired job role?</p>
-                    <ChatInput onSend={handleUserInputSubmit} placeholder="e.g., Frontend Developer, Data Scientist, etc." />
-                </div>
-            )}
-            {step === 'result' && skills && (
+
+            {/* Step 2: Display suggested skills */}
+            {skills && (
                 <div className="space-y-4">
                     <p className="text-lg font-semibold">Here are your skills based on your input:</p>
                     <div className="space-y-2">
@@ -83,4 +61,4 @@ export const SkillStage: React.FC<SkillStageProps> = ({ onStageComplete }) => {
     );
 };
 
-export default SkillStage; // Add default export
+export default SkillStage;

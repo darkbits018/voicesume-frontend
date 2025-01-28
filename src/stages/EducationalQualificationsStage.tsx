@@ -2,15 +2,40 @@ import React, { useState } from 'react';
 
 interface EducationalQualificationsStageProps {
   onSubmit: (data: { education: string }) => void;
+  handleSendMessage: (message: string, type: 'user' | 'ai') => void;
 }
 
-export const EducationalQualificationsStage: React.FC<EducationalQualificationsStageProps> = ({ onSubmit }) => {
+export const EducationalQualificationsStage: React.FC<EducationalQualificationsStageProps> = ({ onSubmit, handleSendMessage }) => {
   const [education, setEducation] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (education.trim()) { // Ensure education is not empty
-      onSubmit({ education });
+      try {
+        // Send the education data to the Flask backend
+        const response = await fetch('http://127.0.0.1:5000/add-education', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ education_input: education }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to save education details.');
+        }
+
+        const result = await response.json();
+        console.log(result.message); // Log success message
+
+        // Update the UI
+        onSubmit({ education });
+      } catch (error) {
+        console.error('Error saving education details:', error);
+        // Display an error message in the chat
+        handleSendMessage(error.message || 'Failed to save education details. Please try again.', 'ai');
+      }
     }
   };
 
@@ -37,4 +62,4 @@ export const EducationalQualificationsStage: React.FC<EducationalQualificationsS
       </button>
     </form>
   );
-}; 
+};

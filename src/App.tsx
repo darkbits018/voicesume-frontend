@@ -7,6 +7,8 @@ import { useWorkflow } from './hooks/useWorkflow';
 import { useVoiceInput } from './hooks/useVoiceInput';
 import { getNextStage } from './utils/workflowUtils';
 import { ChatAction } from './types';
+import SkillStage from './stages/SkillStage';
+import { speakText } from './utils/textToSpeech'; // Import the utility function
 
 function App() {
   const { state, moveToStage, addMessage, updateData, onStageComplete } = useWorkflow();
@@ -15,6 +17,10 @@ function App() {
   const [editingProfile, setEditingProfile] = useState(false); // Define editingProfile state
   const [inputValue, setInputValue] = useState(''); // Define inputValue state
   const [showInput, setShowInput] = useState(true);
+  const [userInput, setUserInput] = useState('');
+  const [skills, setSkills] = useState<{ primary: string; secondary: string; additional: string } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -42,6 +48,9 @@ function App() {
 
   const handleSendMessage = (message: string, type: 'user' | 'ai' = 'user', action?: ChatAction) => {
     addMessage(message, type);
+    if (type === 'ai') {
+      speakText(message); // Make the AI message speak
+    }
     if (action) {
       addMessage(action, 'ai');
     }
@@ -116,19 +125,38 @@ function App() {
     }
   };
 
-  const handleSendMessageWrapper = (message: string) => {
+  const handleSendMessageWrapper = async (input: string) => {
     if (editingProfile) {
-      handleProfileUpdate(message);
+      handleProfileUpdate(input);
     } else if (useAISuggestion && state.stage === 'careerObjective') {
-      handleSendMessage(message, 'user');
-      handleAISuggestionSubmit(message);
+      handleSendMessage(input, 'user');
+      handleAISuggestionSubmit(input);
       setUseAISuggestion(false);
     } else {
-      handleSendMessage(message);
+      setUserInput(input);
+      setLoading(true);
+      setError(null);
+
+      try {
+        // Send data to backend for processing
+        const response = await sendResponse('skills', {
+          userInput: input,
+          desiredJobRole: 'jobRole', // Replace with actual job role
+        });
+
+        // Set skills returned by the backend
+        setSkills({
+          primary: response.primarySkill,
+          secondary: response.secondarySkill,
+          additional: response.additionalSkills,
+        });
+      } catch (error) {
+        setError('Failed to fetch skills. Please try again.');
+      } finally {
+        setLoading(false);
+      }
     }
   };
-
-
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
@@ -155,6 +183,15 @@ function App() {
             moveToStage={moveToStage} // Pass this prop
             state={state}
 
+          />
+          <SkillStage
+            onStageComplete={(data) => console.log('Stage Complete:', data)}
+            jobRole="jobRole" // Replace with actual job role
+            userInput={userInput}
+            skills={skills}
+            loading={loading}
+            error={error}
+            handleUserInputSubmit={handleSendMessageWrapper}
           />
           <div ref={chatEndRef} />
         </div>
